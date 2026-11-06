@@ -15,13 +15,13 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 20
 
-    - name: Install Dependencies
-      run: npm install
-
-    - name: Add iOS Platform
-      run: npx cap add ios && npx cap sync
+    - name: Initialize Capacitor iOS
+      run: |
+        npx cap init KOMEX com.komex.messenger --web-dir www --yes || true
+        npx cap add ios
+        npx cap sync ios
 
     - name: Build iOS Project
       run: |
