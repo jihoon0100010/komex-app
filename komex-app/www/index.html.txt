@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOMEX 메신저</title>
+    <style>
+        :root {
+            --primary-color: #5865F2;
+            --bg-color: #313338;
+            --card-bg: #2b2d31;
+            --text-color: #dbdee1;
+            --text-muted: #949ba4;
+            --border-color: #1f2023;
+            --hover-color: #35373c;
+            --input-bg: #383a40;
+        }
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            max-height: 850px;
+            background: var(--card-bg);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 0;
+            position: relative;
+        }
+        @media (min-width: 480px) {
+            .app-container {
+                border-radius: 20px;
+                height: 90vh;
+            }
+        }
+        header {
+            background: #2b2d31;
+            color: white;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn:hover { opacity: 0.9; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .friend-add-icon {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .room-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            background: #2b2d31;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+        .room-item:hover {
+            background: var(--hover-color);
+            border-color: var(--border-color);
+        }
+        .room-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #5865F2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            margin-right: 12px;
+            flex-shrink: 0;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+        .room-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .room-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #f2f3f5;
+            display: flex;
+            justify-content: space-between;
+        }
+        .room-preview {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .room-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .chat-bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin: 4px 0;
+            word-break: break-all;
+            font-size: 0.95rem;
+            position: relative;
+            cursor: pointer;
+        }
+        .chat-bubble.my {
+            background: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-bubble.other {
+            background: var(--input-bg);
+            color: var(--text-color);
+            align-self: flex-start;
+        }
+        .chat-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+        .reaction-bar {
+            display: flex;
+            background: #ffffff;
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 30px;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: absolute;
+            z-index: 100;
+            transform: translateX(-50%);
+        }
+        .reaction-item {
+            font-size: 22px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .reaction-item:hover { transform: scale(1.2); }
+        .action-sheet-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            display: flex;
+            align-items: flex-end;
+        }
+        .action-sheet {
+            background: #2b2d31;
+            width: 100%;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 20px 16px 30px 16px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            color: #dbdee1;
+        }
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 8px 0;
+            font-weight: 500;
+        }
+        .action-item:hover { color: white; }
+        .action-item.danger { color: #f23f43; }
+        .mention-popup {
+            position: absolute;
+            bottom: 70px;
+            left: 16px;
+            right: 16px;
+            background: #2b2d31;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .mention-suggestion {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .mention-suggestion:hover { background: var(--hover-color); }
+        .tab-bar {
+            display: flex;
+            background: #1e1f22;
+            padding: 8px;
+            justify-content: space-around;
+            border-top: 1px solid var(--border-color);
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .tab-btn.active { color: white; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1 id="app-title">KOMEX</h1>
+        <div id="header-action"></div>
+    </header>
+
+    <div class="content" id="main-content"></div>
+    <div id="tab-container"></div>
+</div>
+
+<script>
+    let currentDeviceId = localStorage.getItem('komex_device_id');
+    if(!currentDeviceId) {
+        currentDeviceId = 'dev_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('komex_device_id', currentDeviceId);
+    }
+
+    let state = {
+        currentUser: JSON.parse(localStorage.getItem('komex_current_user')) || null,
+        users: JSON.parse(localStorage.getItem('komex_users')) || {}, 
+        rooms: JSON.parse(localStorage.getItem('komex_rooms')) || {}, 
+        chats: JSON.parse(localStorage.getItem('komex_chats')) || {}, 
+        activeChat: null,
+        viewMode: 'login',
+        pendingUser: null,
+        generatedCode: null
+    };
+
+    function saveData() {
+        localStorage.setItem('komex_users', JSON.stringify(state.users));
+        localStorage.setItem('komex_rooms', JSON.stringify(state.rooms));
+        localStorage.setItem('komex_chats', JSON.stringify(state.chats));
+        localStorage.setItem('komex_current_user', JSON.stringify(state.currentUser));
+    }
+
+    function render() {
+        const content = document.getElementById('main-content');
+        const headerAction = document.getElementById('header-action');
+        const appTitle = document.getElementById('app-title');
+        const tabContainer = document.getElementById('tab-container');
+        
+        content.innerHTML = '';
+        headerAction.innerHTML = '';
+        tabContainer.innerHTML = '';
+
+        if (!state.currentUser) {
+            if(state.viewMode === 'register') {
+                appTitle.innerText = "KOMEX 회원가입";
+                renderRegisterView(content);
+            } else if(state.viewMode === 'verify') {
+                appTitle.innerText = "새 기기 본인인증";
+                renderVerifyView(content);
+            } else {
+                appTitle.innerText = "KOMEX 로그인";
+                renderLoginView(content);
+            }
+        } else {
+            appTitle.innerText = `KOMEX (${state.currentUser})`;
+            
+            const addBtn = document.createElement('div');
+            addBtn.className = 'friend-add-icon';
+            addBtn.innerHTML = '+';
+            addBtn.title = "친구 추가";
+            addBtn.onclick = openAddFriendModal;
+            headerAction.appendChild(addBtn);
+
+            renderHomeView(content);
+            renderTabBar();
+        }
+    }
+
+    function renderLoginView(container) {
+        container.innerHTML = `
+            <div style="margin: auto; width: 100%; text-align: center;">
+                <div style="width: 64px; height: 64px; background: #5865F2; border-radius: 16px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white;">K</div>
+                <h2 style="color: white; margin-bottom: 20px;">로그인</h2>
+                <input type="text" id="login-id" placeholder="전화번호 또는 이메일">
+                <input type="password" id="login-password" placeholder="비밀번호">
+                <button class="btn" onclick="handleLogin()">로그인</button>
+                <button class="btn" style="background: #4e5058;" onclick="state.viewMode = 'register'; render();">계정이 없으신가요? 회원가입</button>
+            </div>
+        `;
+    }
+
+    function renderVerifyView(container) {
+        container.innerHTML = `
+            <div style="margin: auto; width: 100%; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 10px;">🛡️</div>
+                <h3 style="color: white;">새로운 기기/위치 감지</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">등록된 연락처(${state.pendingUser.identifier})로 발송된 인증코드를 입력하세요.</p>
+                <div style="background: #1e1f22; padding: 12px; border-radius: 8px; margin: 15px 0; color: #5865F2; font-weight: bold; font-size: 1.1rem;">
+                    [시뮬레이션 발송 코드]: ${state.generatedCode}
+                </div>
+                <input type="text" id="verify-code-input" placeholder="6자리 인증코드 입력" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
+                <button class="btn" onclick="handleVerifyCode()">인증 확인 및 로그인</button>
+                <button class="btn" style="background: #4e5058;" onclick="state.viewMode = 'login'; render();">취소</button>
+            </div>
+        `;
+    }
+
+    function renderRegisterView(container) {
+        container.innerHTML = `
+            <div style="margin: auto; width: 100%;">
+                <h2 style="color: white; text-align: center; margin-bottom: 20px;">회원가입</h2>
+                <input type="text" id="reg-id" placeholder="전화번호 또는 이메일 주소">
+                <input type="text" id="reg-username" placeholder="고유 사용자명 (예: komex_user)">
+                <input type="password" id="reg-password" placeholder="비밀번호">
+                <button class="btn" onclick="handleRegister()">가입 완료</button>
+                <button class="btn" style="background: #4e5058;" onclick="state.viewMode = 'login'; render();">돌아가기</button>
+            </div>
+        `;
+    }
+
+    function handleRegister() {
+        const identifier = document.getElementById('reg-id').value.trim();
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+
+        if(!identifier || !username || !password) return alert('모든 항목을 입력해주세요.');
+        if(state.users[username]) return alert('이미 존재하는 고유 사용자명입니다.');
+        
+        for(let u in state.users) {
+            if(state.users[u].identifier === identifier) {
+                return alert('이미 등록된 전화번호 또는 이메일입니다.');
+            }
+        }
+
+        state.users[username] = {
+            identifier: identifier,
+            password: password,
+            nickname: username,
+            profileIcon: '',
+            statusMsg: 'KOMEX 사용 중',
+            friends: [],
+            requests: [],
+            mutedRooms: [],
+            trustedDevice: currentDeviceId
+        };
+        state.currentUser = username;
+        state.viewMode = 'login';
+        saveData();
+        render();
+    }
+
+    function handleLogin() {
+        const identifier = document.getElementById('login-id').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        let foundUserKey = null;
+        for(let u in state.users) {
+            if(state.users[u].identifier === identifier && state.users[u].password === password) {
+                foundUserKey = u;
+                break;
+            }
+        }
+
+        if(!foundUserKey) return alert('전화번호/이메일 또는 비밀번호가 틀렸습니다.');
+
+        const userObj = state.users[foundUserKey];
+
+        if(userObj.trustedDevice && userObj.trustedDevice !== currentDeviceId) {
+            state.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            state.pendingUser = { key: foundUserKey, identifier: identifier };
+            state.viewMode = 'verify';
+            render();
+            return;
+        }
+
+        userObj.trustedDevice = currentDeviceId;
+        state.currentUser = foundUserKey;
+        saveData();
+        render();
+    }
+
+    function handleVerifyCode() {
+        const inputCode = document.getElementById('verify-code-input').value.trim();
+        if(inputCode !== state.generatedCode) {
+            return alert('인증코드가 일치하지 않습니다.');
+        }
+
+        const uKey = state.pendingUser.key;
+        state.users[uKey].trustedDevice = currentDeviceId;
+        state.currentUser = uKey;
+        state.viewMode = 'login';
+        state.pendingUser = null;
+        state.generatedCode = null;
+        saveData();
+        alert('새 기기 인증이 완료되었습니다!');
+        render();
+    }
+
+    function renderHomeView(container) {
+        const userObj = state.users[state.currentUser];
+        
+        container.innerHTML = `
+            <div style="margin-bottom: 15px; background: #2b2d31; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                    <div class="room-avatar" style="width:56px; height:56px; ${userObj.profileIcon ? 'background-image:url('+userObj.profileIcon+');' : ''}">${!userObj.profileIcon ? userObj.currentUser?.[0] || '👤' : ''}</div>
+                    <div style="flex:1;">
+                        <span style="font-size:0.8rem; color:var(--text-muted);">계정: ${userObj.identifier}</span><br>
+                        <b>${userObj.nickname}</b>
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:0.85rem; color:var(--text-muted);">사용자명(닉네임) 변경</label>
+                    <input type="text" id="my-nickname" value="${userObj.nickname}" style="margin:0;">
+                    <label style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">프로필 이미지 링크(URL) 또는 이모지</label>
+                    <input type="text" id="my-profile-icon" value="${userObj.profileIcon || ''}" placeholder="https://... 또는 🐱" style="margin:0;">
+                    <button class="btn" style="margin-top:6px;" onclick="updateProfile()">프로필 저장</button>
+                </div>
+            </div>
+            <div id="sub-view" style="flex: 1; overflow-y: auto;"></div>
+        `;
+        renderRoomsTab();
+    }
+
+    function updateProfile() {
+        const new
+      

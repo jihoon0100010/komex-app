@@ -1,0 +1,6 @@
+{
+  "appId": "com.komex.messenger",
+  "appName": "KOMEX",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
