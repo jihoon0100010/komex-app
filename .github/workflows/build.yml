@@ -66,3 +66,9 @@ jobs:
       - name: Build iOS Project
         run: |
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug build CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload iOS Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-build-output
+          path: ios/App/build/
