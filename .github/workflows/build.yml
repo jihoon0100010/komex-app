@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Capacitor CLI
+      - name: Install Capacitor CLI & iOS
         run: |
           npm install @capacitor/cli @capacitor/core @capacitor/ios
 
@@ -40,22 +40,15 @@ jobs:
         run: |
           npx cap add ios || true
 
-      - name: Force Fix Podfile and Deployment Target First
+      - name: Safe Fix iOS Deployment Target First
         run: |
-          mkdir -p ios/App
-          cat << 'EOF' > ios/App/Podfile
-          require_relative '../../node_modules/@capacitor/ios/scripts/pods'
-
-          platform :ios, '14.0'
-          use_frameworks!
-
-          target 'App' do
-            capacitor_pods
-          end
-          EOF
-
-          if [ -f ios/App/App.xcodeproj/project.pbxproj ]; then
-            sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = .*/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' ios/App/App.xcodeproj/project.pbxproj || true
+          if [ -d ios/App ]; then
+            if [ -f ios/App/Podfile ]; then
+              sed -i '' "s/platform :ios, '.*'/platform :ios, '14.0'/g" ios/App/Podfile || true
+            fi
+            if [ -f ios/App/App.xcodeproj/project.pbxproj ]; then
+              sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = .*/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' ios/App/App.xcodeproj/project.pbxproj || true
+            fi
           fi
 
       - name: Sync Capacitor iOS
