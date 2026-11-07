@@ -21,6 +21,13 @@ jobs:
         run: |
           npm install @capacitor/cli @capacitor/core @capacitor/ios
 
+      - name: Create www directory and index.html
+        run: |
+          mkdir -p www
+          if [ ! -f www/index.html ]; then
+            echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>KOMEX</title></head><body><h1>KOMEX App</h1></body></html>' > www/index.html
+          fi
+
       - name: Create Capacitor Config
         run: |
           echo '{
