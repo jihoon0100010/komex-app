@@ -36,9 +36,18 @@ jobs:
             "webDir": "www"
           }' > capacitor.config.json
 
-      - name: Add and Sync Capacitor iOS
+      - name: Add Capacitor iOS
         run: |
           npx cap add ios || true
+
+      - name: Fix iOS Deployment Target
+        run: |
+          if [ -d ios/App ]; then
+            sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = .*/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/g' ios/App/App.xcodeproj/project.pbxproj || true
+          fi
+
+      - name: Sync Capacitor iOS
+        run: |
           npx cap sync ios
 
       - name: Build iOS Project
