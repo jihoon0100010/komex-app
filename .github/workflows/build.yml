@@ -40,11 +40,11 @@ jobs:
         run: |
           npx cap add ios || true
 
-      - name: Force Write Correct Path Podfile & Target
+      - name: Force Write Absolute Path Podfile & Target
         run: |
           mkdir -p ios/App
           cat << 'EOF' > ios/App/Podfile
-          require File.expand_path('../../node_modules/@capacitor/ios/scripts/pods', __FILE__)
+          require "#{ENV['GITHUB_WORKSPACE']}/node_modules/@capacitor/ios/scripts/pods"
 
           platform :ios, '14.0'
           use_frameworks!
