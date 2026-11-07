@@ -40,12 +40,19 @@ jobs:
         run: |
           npx cap add ios || true
 
-      - name: Fix iOS Deployment Target
+      - name: Set iOS Deployment Target and Fix Podfile
         run: |
           if [ -d ios/App ]; then
+            # Xcode 프로젝트 파일 전체의 배포 버전을 14.0으로 강제 고정
             sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = .*/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' ios/App/App.xcodeproj/project.pbxproj || true
+            
+            # Podfile 상단에 플랫폼 버전을 14.0으로 명시적으로 주입
             if [ -f ios/App/Podfile ]; then
-              sed -i '' "s/platform :ios, '.*'/platform :ios, '14.0'/g" ios/App/Podfile || true
+              if ! grep -q "platform :ios" ios/App/Podfile; then
+                echo "platform :ios, '14.0'" | cat - ios/App/Podfile > temp && mv temp ios/App/Podfile
+              else
+                sed -i '' "s/platform :ios, '.*'/platform :ios, '14.0'/g" ios/App/Podfile || true
+              fi
             fi
           fi
 
@@ -53,6 +60,17 @@ jobs:
         run: |
           npx cap sync ios
 
-      - name: Build iOS Project
+      - name: Final Patch Deployment Target
         run: |
+          if [ -d ios/App ]; then
+            sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = .*/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' ios/App/App.xcodeproj/project.pbxproj || true
+          fi
+
+      - name: Build iOS Project
+        env:
+          ARCHS: "x86_64"
+        run: |
+          cd ios/App
+          pod install
+          cd ../..
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug build CODE_SIGNING_ALLOWED=NO
