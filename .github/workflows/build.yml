@@ -21,9 +21,16 @@ jobs:
         run: |
           npm install @capacitor/cli @capacitor/core @capacitor/ios
 
-      - name: Initialize & Sync Capacitor iOS
+      - name: Create Capacitor Config
         run: |
-          npx cap init KOMEX com.komex.messenger --web-dir www --yes || true
+          echo '{
+            "appId": "com.komex.messenger",
+            "appName": "KOMEX",
+            "webDir": "www"
+          }' > capacitor.config.json
+
+      - name: Add and Sync Capacitor iOS
+        run: |
           npx cap add ios || true
           npx cap sync ios
 
