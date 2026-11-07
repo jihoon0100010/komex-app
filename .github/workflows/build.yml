@@ -9,21 +9,24 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-    - name: Initialize Capacitor iOS
-      run: |
-        npx cap init KOMEX com.komex.messenger --web-dir www --yes || true
-        npx cap add ios
-        npx cap sync ios
+      - name: Install Capacitor CLI
+        run: |
+          npm install @capacitor/cli @capacitor/core @capacitor/ios
 
-    - name: Build iOS Project
-      run: |
-        cd ios/App
-        xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO
+      - name: Initialize & Sync Capacitor iOS
+        run: |
+          npx cap init KOMEX com.komex.messenger --web-dir www --yes || true
+          npx cap add ios || true
+          npx cap sync ios
+
+      - name: Build iOS Project
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug build CODE_SIGNING_ALLOWED=NO
