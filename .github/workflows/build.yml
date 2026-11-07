@@ -40,11 +40,11 @@ jobs:
         run: |
           npx cap add ios || true
 
-      - name: Force Write Correct Podfile & Target
+      - name: Force Write Absolute Path Podfile & Target
         run: |
           mkdir -p ios/App
           cat << 'EOF' > ios/App/Podfile
-          require_relative '../../node_modules/@capacitor/ios/scripts/pods'
+          require File.expand_path('../../../node_modules/@capacitor/ios/scripts/pods', __FILE__)
 
           platform :ios, '14.0'
           use_frameworks!
@@ -58,7 +58,7 @@ jobs:
             sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = .*/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' ios/App/App.xcodeproj/project.pbxproj || true
           fi
 
-      - name: Copy Capacitor Assets (No Auto Pod Install)
+      - name: Copy Capacitor Assets
         run: |
           npx cap copy ios
 
